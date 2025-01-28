@@ -33,16 +33,25 @@
 
   // get participant-specific url parameters from mTurk study link
   var participant_id = getParamFromURL('participant_id');
-  var high_interest = getParamFromURL('hi');
-  var low_interest = getParamFromURL('li');
+  var hi_url = getParamFromURL('hi');
+  var low_url = getParamFromURL('li');
 
   //make sure that nobody can enter anything damaging
   participant_id.replace(/[^A-Za-z0-9_]/g, "");
-  high_interest.replace(/[^A-Za-z0-9_]/g, "");
-  low_interest.replace(/[^A-Za-z0-9_]/g, "");
+  hi_url.replace(/[^A-Za-z0-9_]/g, "");
+  low_url.replace(/[^A-Za-z0-9_]/g, "");
 
-  high_interest = "LEOPARDS";
-  low_interest = "HORSES";
+  if (hi_url == "") {
+    var high_interest = "LEOPARDS";
+  } else {
+    var high_interest = hi_url
+  }
+
+  if (low_url == "") {
+    var low_interest = "HORSES";
+  } else {
+    var low_interest = low_url
+  }
 
   jsPsych.data.addProperties({
     participant_id: participant_id,
