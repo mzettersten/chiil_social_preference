@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>label task</title>
+  <script src="https://unpkg.com/jspsych@8.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@2.0.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-preload@2.0.0"></script>
+  <script src="js/trials.js"></script>
+  <script src="js/helper.js"></script>
+  <script src="js/plugin-html-button-keyboard-response.js"></script>
+  <link href="https://unpkg.com/jspsych@8.0.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+  <!-- <link href="css/csp_custom.css" rel="stylesheet" type="text/css" /> -->
+<!--   <style> 
+    .trial #jspsych-btn {margin: 6em; padding: 20px}
+  </style> -->
+</head>
+
+<body></body>
+<script>
+
+  // initialize jsPsych
+  var jsPsych = initJsPsych(
+    {
+      on_finish: function () {
+        jsPsych.data.displayData();
+        jsPsych.data.get().localSave('csv','mydata.csv');
+      }
+    }
+  );
+
+  // get participant-specific url parameters from mTurk study link
+  var participant_id = getParamFromURL('participant_id');
+  var high_interest = getParamFromURL('hi');
+  var low_interest = getParamFromURL('li');
+
+  //make sure that nobody can enter anything damaging
+  participant_id.replace(/[^A-Za-z0-9_]/g, "");
+  high_interest.replace(/[^A-Za-z0-9_]/g, "");
+  low_interest.replace(/[^A-Za-z0-9_]/g, "");
+
+  high_interest = "LEOPARDS";
+  low_interest = "HORSES";
+
+  jsPsych.data.addProperties({
+    participant_id: participant_id,
+    high_interest_category: high_interest,
+    low_interest_category: low_interest
+  });
+
+  // create timeline
+  var timeline = [];
+
+  var shuffled_trials = jsPsych.randomization.shuffle(social_pref_trials);
+  console.log(shuffled_trials);
+
+  var image_1_position_list = ["r","r","r","r","l","l","l","l"];
+  var shuffled_image_1_position_list = jsPsych.randomization.shuffle(image_1_position_list);
+
+  //collect all the images
+  let image1_list = social_pref_trials.map(item => "images/"+item.image_1+".jpg");
+  let image2_list = social_pref_trials.map(item => "images/"+item.image_2+".jpg");
+  let image_list = image1_list.concat(image2_list);
+
+  //collect image interests by location list
+  let interest_condition_l_list = shuffled_trials.map(item => item.interest_condition_l);
+  let interest_condition_r_list = shuffled_trials.map(item => item.interest_condition_r);
+
+  console.log(image_list)
+
+  //preload images and audio
+  var preload = {
+    type: jsPsychPreload,
+    images: image_list
+  };
+  timeline.push(preload);
+
+  // define welcome message trial
+  var welcome = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: "Welcome to the experiment. Press any key to begin.",
+    data: {
+      trial_number: 0
+    }
+  };
+
+  // add the welcome trial to the timeline variable
+  timeline.push(welcome);
+
+  // // create a short survey to collect a participant identifier
+  // var participant_id_entry = {
+  //   type: jsPsychSurveyText,
+  //   questions: [{ prompt: "Please enter your participant ID (e.g. p1):", name: "participant_id" }],
+  //   on_finish: function (data) {
+  //     console.log(data.response)
+  //     jsPsych.data.addProperties({
+  //       participant: data.response.participant_id
+  //     });
+  //   }
+  // };
+  // timeline.push(participant_id_entry)
+
+  var trial_number = 0;
+
+  for (let i = 0; i < social_pref_trials.length; i++) {
+
+    trial_number = trial_number+1;
+
+    current_trial_info = shuffled_trials[i];
+
+    //shuffle position
+    current_position_image_1 = shuffled_image_1_position_list[i];
+
+    if (current_position_image_1 == "l") {
+      current_left_image = 'images/'+current_trial_info["image_1"]+'.jpg';
+      current_right_image = 'images/'+current_trial_info["image_2"]+'.jpg';
+    } else {
+      current_left_image = 'images/'+current_trial_info["image_2"]+'.jpg';
+      current_right_image = 'images/'+current_trial_info["image_1"]+'.jpg';
+    }
+
+    if (current_trial_info.interest_condition_l == "hi") {
+      var current_left_interest = high_interest;
+      var current_right_interest = low_interest;
+    } else {
+      var current_left_interest = low_interest;
+      var current_right_interest = high_interest;
+    }
+
+    // basic social preference trial
+    var pre_trial = {
+    type: jsPsychHtmlButtonKeyboardResponse,
+    stimulus: '<p>Which child do you like most?</p><p style="opacity: 0">GO!</p>',
+    choices: [current_left_image, current_right_image],
+    button_layout: "flex",
+    response_keys: ["q"],
+    button_html:
+        function (choice, choice_index) {
+
+          current_trial_index = jsPsych.data.get().last(1).values()[0].trial_number
+          console.log(current_trial_index);
+
+          current_interest_condition_l = interest_condition_l_list[current_trial_index];
+          current_interest_condition_r = interest_condition_r_list[current_trial_index];
+
+          if (current_interest_condition_l == "hi") {
+            var current_left_label = high_interest;
+            var current_right_label = low_interest;
+          } else {
+            var current_left_label = low_interest;
+            var current_right_label = high_interest;
+          }
+
+          if (choice_index == 0) {
+            var current_label = current_left_label;
+          } else {
+            var current_label = current_right_label;
+          }
+
+          console.log(current_label);
+          
+          return `<button class="jspsych-btn" onmouseover="this.style='background-color:#ADD8E6;margin-left:100px;margin-right:100px; padding: 20px;';" onmouseout="this.style='background-color:white;margin-left:100px;margin-right:100px; padding: 20px;';" style="margin-left:100px;margin-right:100px;padding: 20px;"><figcaption style="font-size:30px">${current_label}</figcaption><img src="${choice}" style="width:400px;height:400px"></button>`;
+        },
+    prompt: "",
+    data: {
+      trial_kind: "trial_instruction",
+      trial_number: trial_number,
+      pair: current_trial_info.pair,
+      image_1: current_trial_info.image_1,
+      image_2: current_trial_info.image_2,
+      condition: current_trial_info.condition,
+      genders: current_trial_info.genders,
+      interest_condition_l: current_trial_info.interest_condition_l,
+      interest_condition_r: current_trial_info.interest_condition_r,
+      image_1_position: current_position_image_1,
+      current_left_image: current_left_image,
+      current_right_image: current_right_image,
+      current_left_interest: current_left_interest,
+      current_right_interest: current_right_interest
+    },
+};
+
+timeline.push(pre_trial);
+
+    // basic social preference trial
+    var trial = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: '<p>Which child do you like most?</p><p>GO!</p>',
+    choices: [current_left_image, current_right_image],
+    button_layout: "flex",
+    button_html:
+        function (choice, choice_index) {
+
+          current_trial_index = jsPsych.data.get().last(1).values()[0].trial_number-1;
+          console.log(current_trial_index);
+
+          current_interest_condition_l = interest_condition_l_list[current_trial_index];
+          current_interest_condition_r = interest_condition_r_list[current_trial_index];
+
+          if (current_interest_condition_l == "hi") {
+            var current_left_label = high_interest;
+            var current_right_label = low_interest;
+          } else {
+            var current_left_label = low_interest;
+            var current_right_label = high_interest;
+          }
+
+          if (choice_index == 0) {
+            var current_label = current_left_label;
+          } else {
+            var current_label = current_right_label;
+          }
+
+          console.log(current_label);
+          
+          return `<button class="jspsych-btn" onmouseover="this.style='background-color:#ADD8E6;margin-left:100px;margin-right:100px; padding: 20px;';" onmouseout="this.style='background-color:white;margin-left:100px;margin-right:100px; padding: 20px;';" style="margin-left:100px;margin-right:100px; padding: 20px;"><figcaption style="font-size:30px">${current_label}</figcaption><img src="${choice}" style="width:400px;height:400px"></button>`;
+        },
+    prompt: "",
+    data: {
+      trial_kind: "trial_response",
+      trial_number: trial_number,
+      pair: current_trial_info.pair,
+      image_1: current_trial_info.image_1,
+      image_2: current_trial_info.image_2,
+      condition: current_trial_info.condition,
+      genders: current_trial_info.genders,
+      interest_condition_l: current_trial_info.interest_condition_l,
+      interest_condition_r: current_trial_info.interest_condition_r,
+      image_1_position: current_position_image_1,
+      current_left_image: current_left_image,
+      current_right_image: current_right_image,
+      current_left_interest: current_left_interest,
+      current_right_interest: current_right_interest
+    },
+    post_trial_gap: 500
+};
+
+timeline.push(trial);
+  }
+
+
+  // start the experiment
+  jsPsych.run(timeline);
+
+</script>
+
+</html>
