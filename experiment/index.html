@@ -88,8 +88,9 @@
 
   // define welcome message trial
   var welcome = {
-    type: jsPsychHtmlKeyboardResponse,
-    stimulus: "Welcome to the experiment. Press any key to begin.",
+    type: jsPsychHtmlButtonResponse,
+    stimulus: '<p style="font-size:20px; font-weight:bold">Ready to play? Click on the computer to start!</p>',
+    choices: ['<img src="images/computer.png">'],
     data: {
       trial_number: 0
     }
