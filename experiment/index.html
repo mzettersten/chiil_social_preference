@@ -82,7 +82,12 @@
   //collect all the images
   let image1_list = social_pref_trials.map(item => "images/" + item.image_1 + ".jpg");
   let image2_list = social_pref_trials.map(item => "images/" + item.image_2 + ".jpg");
-  let image_list = image1_list.concat(image2_list);
+  let main_image_list = image1_list.concat(image2_list);
+  let practice_image1_list = practice_trials.map(item => "images/" + item.image_1 + ".jpg");
+  let practice_image2_list = practice_trials.map(item => "images/" + item.image_2 + ".jpg");
+  let practice_image_list = practice_image1_list.concat(practice_image2_list);
+  let other_image_list = ["images/apple.png","images/banana.png","images/cherries.png","images/grapes.png","images/fireworks.png","images/fireworks.gif","images/computer.png"];
+  let image_list = main_image_list.concat(practice_image_list,other_image_list);
 
   //collect image interests by location list
   let interest_condition_l_list = shuffled_trials.map(item => item.interest_condition_l);
@@ -201,8 +206,21 @@
 
   }
 
-  //practice trials
 
+  //practice trials
+//   for (let i = 0; i < social_pref_trials.length; i++) {
+//     trial_number = trial_number + 1;
+//     current_trial_info = shuffled_trials[i];
+    
+//     //shuffle position
+//     current_position_image_1 = shuffled_image_1_position_list[i];
+    
+//     var pre_trial = create_pre_trial(current_trial_info,current_position_image_1,high_interest_category,low_interest_category);
+//     var trial = create_trial(current_trial_info,current_position_image_1,high_interest_category,low_interest_category);
+    
+//     timeline.push(pre_trial);
+//     timeline.push(trial);
+// }
 
 
 
