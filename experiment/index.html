@@ -97,7 +97,7 @@
   };
 
   // add the welcome trial to the timeline variable
-  timeline.push(welcome);
+  //timeline.push(welcome);
 
   // // create a short survey to collect a participant identifier
   // var participant_id_entry = {
@@ -142,7 +142,7 @@
     // basic social preference trial
     var pre_trial = {
     type: jsPsychHtmlButtonKeyboardResponse,
-    stimulus: '<p>Which child do you like most?</p><p style="opacity: 0">GO!</p>',
+    stimulus: '<p style="font-weight:bold">WHICH KID DO YOU LIKE THE MOST?</p><p style="font-weight:bold; opacity: 0">GO!</p>',
     choices: [current_left_image, current_right_image],
     button_layout: "flex",
     response_keys: ["q"],
@@ -192,12 +192,11 @@
     },
 };
 
-timeline.push(pre_trial);
+//timeline.push(pre_trial);
 
-    // basic social preference trial
     var trial = {
     type: jsPsychHtmlButtonResponse,
-    stimulus: '<p>Which child do you like most?</p><p>GO!</p>',
+    stimulus: '<p style="font-weight:bold">WHICH KID DO YOU LIKE THE MOST?</p><p style="font-weight:bold">GO!</p>',
     choices: [current_left_image, current_right_image],
     button_layout: "flex",
     button_html:
@@ -247,9 +246,15 @@ timeline.push(pre_trial);
     post_trial_gap: 500
 };
 
-timeline.push(trial);
+//timeline.push(trial);
   }
 
+  //add final page
+  var final_page = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: "<p style='font-size:20px; font-weight:bold'>GREAT JOB, YOU'RE ALL DONE!</p><img src='images/fireworks.png'>",
+  };
+  timeline.push(final_page)
 
   // start the experiment
   jsPsych.run(timeline);
