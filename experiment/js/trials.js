@@ -1,3 +1,34 @@
+var practice_trials = [
+  {
+    "pair": "practice_1",
+    "image_1": "106_f",
+    "image_2": "348_m",
+    "condition": "gender",
+    "genders": "m-f",
+    "interest_condition_l": "hi",
+    "interest_condition_r": "li"
+  },
+  {
+    "pair": "practice_2",
+    "image_1": "88_f",
+    "image_2": "364_m",
+    "condition": "gender",
+    "genders": "m-f",
+    "interest_condition_l": "hi",
+    "interest_condition_r": "li"
+  },
+  {
+    "pair": "practice_3",
+    "image_1": "274_f",
+    "image_2": "372_m",
+    "condition": "gender",
+    "genders": "m-f",
+    "interest_condition_l": "li",
+    "interest_condition_r": "hi"
+  }
+]
+
+
 var social_pref_trials = [
   {
     "pair": 1,

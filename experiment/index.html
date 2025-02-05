@@ -11,9 +11,10 @@
   <script src="js/trials.js"></script>
   <script src="js/helper.js"></script>
   <script src="js/plugin-html-button-keyboard-response.js"></script>
+  <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
   <link href="https://unpkg.com/jspsych@8.0.0/css/jspsych.css" rel="stylesheet" type="text/css" />
   <!-- <link href="css/csp_custom.css" rel="stylesheet" type="text/css" /> -->
-<!--   <style> 
+  <!--   <style> 
     .trial #jspsych-btn {margin: 6em; padding: 20px}
   </style> -->
 </head>
@@ -25,8 +26,8 @@
   var jsPsych = initJsPsych(
     {
       on_finish: function () {
-        jsPsych.data.displayData();
-        jsPsych.data.get().localSave('csv','mydata.csv');
+        //jsPsych.data.displayData();
+        //jsPsych.data.get().localSave('csv', 'mydata.csv');
       }
     }
   );
@@ -36,10 +37,19 @@
   var hi_url = getParamFromURL('hi');
   var low_url = getParamFromURL('li');
 
+  
+
   //make sure that nobody can enter anything damaging
   participant_id.replace(/[^A-Za-z0-9_]/g, "");
   hi_url.replace(/[^A-Za-z0-9_]/g, "");
   low_url.replace(/[^A-Za-z0-9_]/g, "");
+
+  //define filename
+  const date = new Date();
+	let dateString = date.getFullYear() + '-' + ('0'+(1+date.getMonth())).slice(-2) + '-' + ('0'+date.getDate()).slice(-2) + '_';
+		dateString += ('0'+date.getHours()).slice(-2) + 'h' + ('0'+date.getMinutes()).slice(-2) + '.' + ('0'+date.getSeconds()).slice(-2) + '.' + date.getMilliseconds();
+		console.log(dateString)
+  const filename = "chiil_sp_v1_"+participant_id+"_"+dateString+".csv";
 
   if (hi_url == "") {
     var high_interest = "LEOPARDS";
@@ -65,12 +75,12 @@
   var shuffled_trials = jsPsych.randomization.shuffle(social_pref_trials);
   console.log(shuffled_trials);
 
-  var image_1_position_list = ["r","r","r","r","l","l","l","l"];
+  var image_1_position_list = ["r", "r", "r", "r", "l", "l", "l", "l"];
   var shuffled_image_1_position_list = jsPsych.randomization.shuffle(image_1_position_list);
 
   //collect all the images
-  let image1_list = social_pref_trials.map(item => "images/"+item.image_1+".jpg");
-  let image2_list = social_pref_trials.map(item => "images/"+item.image_2+".jpg");
+  let image1_list = social_pref_trials.map(item => "images/" + item.image_1 + ".jpg");
+  let image2_list = social_pref_trials.map(item => "images/" + item.image_2 + ".jpg");
   let image_list = image1_list.concat(image2_list);
 
   //collect image interests by location list
@@ -112,11 +122,109 @@
   // };
   // timeline.push(participant_id_entry)
 
+  //prepractice trials
+  prepractice_trials = [
+    {
+      images: ["images/apple.png", "images/banana.png"],
+      correct_location: "left",
+      correct_image: "images/apple.png",
+      prompt: '<p style="font-weight:bold">CLICK ON THE APPLE!</p>'
+    },
+    {
+      images: ["images/grapes.png", "images/cherries.png"],
+      correct_location: "right",
+      correct_image: "images/cherries.png",
+      prompt: '<p style="font-weight:bold">CLICK ON THE CHERRIES!</p>'
+    }
+  ];
+
+  var prepractice_trials_shuffled = jsPsych.randomization.shuffle(prepractice_trials);
+
   var trial_number = 0;
 
+  for (let j = 0; j < prepractice_trials_shuffled.length; j++) {
+
+    // basic social preference trial
+    var pre_trial = {
+      type: jsPsychHtmlButtonKeyboardResponse,
+      stimulus: prepractice_trials_shuffled[j]["prompt"]+'<p style="font-weight:bold; opacity: 0">GO!</p>',
+      choices: prepractice_trials_shuffled[j]["images"],
+      button_layout: "flex",
+      response_keys: ["q"],
+      button_html:
+        function (choice, choice_index) {
+          return `<button class="jspsych-btn" onmouseover="this.style='background-color:#ADD8E6;margin-left:100px;margin-right:100px; padding: 20px;';" onmouseout="this.style='background-color:white;margin-left:100px;margin-right:100px; padding: 20px;';" style="margin-left:100px;margin-right:100px;padding: 20px;"><img src="${choice}" style="width:400px;height:400px"></button>`;
+        },
+      prompt: "",
+      data: {
+        trial_kind: "prepractice_trial_instruction",
+        trial_number: trial_number,
+        image_1: prepractice_trials_shuffled[j]["images"][0],
+        image_2: prepractice_trials_shuffled[j]["images"][1],
+        image_1_position: "left",
+        current_left_image: prepractice_trials_shuffled[j]["images"][0],
+        current_right_image: prepractice_trials_shuffled[j]["images"][1],
+        correct_location: prepractice_trials_shuffled[j]["correct_location"],
+        correct_image: prepractice_trials_shuffled[j]["correct_image"]
+      },
+    };
+
+    timeline.push(pre_trial);
+
+    var trial = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: prepractice_trials_shuffled[j]["prompt"]+'<p style="font-weight:bold">GO!</p>',
+      choices: prepractice_trials_shuffled[j]["images"],
+      button_layout: "flex",
+      response_keys: ["q"],
+      button_html:
+        function (choice, choice_index) {
+          return `<button class="jspsych-btn" onmouseover="this.style='background-color:#ADD8E6;margin-left:100px;margin-right:100px; padding: 20px;';" onmouseout="this.style='background-color:white;margin-left:100px;margin-right:100px; padding: 20px;';" style="margin-left:100px;margin-right:100px;padding: 20px;"><img src="${choice}" style="width:400px;height:400px"></button>`;
+        },
+      prompt: "",
+      data: {
+        trial_kind: "prepractice_trial_response",
+        trial_number: trial_number,
+        image_1: prepractice_trials_shuffled[j]["images"][0],
+        image_2: prepractice_trials_shuffled[j]["images"][1],
+        image_1_position: "left",
+        current_left_image: prepractice_trials_shuffled[j]["images"][0],
+        current_right_image: prepractice_trials_shuffled[j]["images"][1],
+        correct_location: prepractice_trials_shuffled[j]["correct_location"],
+        correct_image: prepractice_trials_shuffled[j]["correct_image"]
+      },
+      post_trial_gap: 500
+    };
+
+    timeline.push(trial);
+
+  }
+
+  //practice trials
+
+  prepractice_trials = [
+    {
+      images: ["images/apple.png", "images/banana.png"],
+      correct_location: "left",
+      correct_image: "images/apple.png",
+      prompt: '<p style="font-weight:bold">CLICK ON THE APPLE!</p>'
+    },
+    {
+      images: ["images/grapes.png", "images/cherries.png"],
+      correct_location: "right",
+      correct_image: "images/cherries.png",
+      prompt: '<p style="font-weight:bold">CLICK ON THE CHERRY!</p>'
+    }
+  ];
+
+
+
+
+
+  //social preference trials
   for (let i = 0; i < social_pref_trials.length; i++) {
 
-    trial_number = trial_number+1;
+    trial_number = trial_number + 1;
 
     current_trial_info = shuffled_trials[i];
 
@@ -124,11 +232,11 @@
     current_position_image_1 = shuffled_image_1_position_list[i];
 
     if (current_position_image_1 == "l") {
-      current_left_image = 'images/'+current_trial_info["image_1"]+'.jpg';
-      current_right_image = 'images/'+current_trial_info["image_2"]+'.jpg';
+      current_left_image = 'images/' + current_trial_info["image_1"] + '.jpg';
+      current_right_image = 'images/' + current_trial_info["image_2"] + '.jpg';
     } else {
-      current_left_image = 'images/'+current_trial_info["image_2"]+'.jpg';
-      current_right_image = 'images/'+current_trial_info["image_1"]+'.jpg';
+      current_left_image = 'images/' + current_trial_info["image_2"] + '.jpg';
+      current_right_image = 'images/' + current_trial_info["image_1"] + '.jpg';
     }
 
     if (current_trial_info.interest_condition_l == "hi") {
@@ -141,12 +249,12 @@
 
     // basic social preference trial
     var pre_trial = {
-    type: jsPsychHtmlButtonKeyboardResponse,
-    stimulus: '<p style="font-weight:bold">WHICH KID DO YOU LIKE THE MOST?</p><p style="font-weight:bold; opacity: 0">GO!</p>',
-    choices: [current_left_image, current_right_image],
-    button_layout: "flex",
-    response_keys: ["q"],
-    button_html:
+      type: jsPsychHtmlButtonKeyboardResponse,
+      stimulus: '<p style="font-weight:bold">WHICH KID DO YOU LIKE THE MOST?</p><p style="font-weight:bold; opacity: 0">GO!</p>',
+      choices: [current_left_image, current_right_image],
+      button_layout: "flex",
+      response_keys: ["q"],
+      button_html:
         function (choice, choice_index) {
 
           current_trial_index = jsPsych.data.get().last(1).values()[0].trial_number
@@ -170,39 +278,39 @@
           }
 
           console.log(current_label);
-          
+
           return `<button class="jspsych-btn" onmouseover="this.style='background-color:#ADD8E6;margin-left:100px;margin-right:100px; padding: 20px;';" onmouseout="this.style='background-color:white;margin-left:100px;margin-right:100px; padding: 20px;';" style="margin-left:100px;margin-right:100px;padding: 20px;"><figcaption style="font-size:30px">${current_label}</figcaption><img src="${choice}" style="width:400px;height:400px"></button>`;
         },
-    prompt: "",
-    data: {
-      trial_kind: "trial_instruction",
-      trial_number: trial_number,
-      pair: current_trial_info.pair,
-      image_1: current_trial_info.image_1,
-      image_2: current_trial_info.image_2,
-      condition: current_trial_info.condition,
-      genders: current_trial_info.genders,
-      interest_condition_l: current_trial_info.interest_condition_l,
-      interest_condition_r: current_trial_info.interest_condition_r,
-      image_1_position: current_position_image_1,
-      current_left_image: current_left_image,
-      current_right_image: current_right_image,
-      current_left_interest: current_left_interest,
-      current_right_interest: current_right_interest
-    },
-};
+      prompt: "",
+      data: {
+        trial_kind: "trial_instruction",
+        trial_number: trial_number,
+        pair: current_trial_info.pair,
+        image_1: current_trial_info.image_1,
+        image_2: current_trial_info.image_2,
+        condition: current_trial_info.condition,
+        genders: current_trial_info.genders,
+        interest_condition_l: current_trial_info.interest_condition_l,
+        interest_condition_r: current_trial_info.interest_condition_r,
+        image_1_position: current_position_image_1,
+        current_left_image: current_left_image,
+        current_right_image: current_right_image,
+        current_left_interest: current_left_interest,
+        current_right_interest: current_right_interest
+      },
+    };
 
-//timeline.push(pre_trial);
+    //timeline.push(pre_trial);
 
     var trial = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: '<p style="font-weight:bold">WHICH KID DO YOU LIKE THE MOST?</p><p style="font-weight:bold">GO!</p>',
-    choices: [current_left_image, current_right_image],
-    button_layout: "flex",
-    button_html:
+      type: jsPsychHtmlButtonResponse,
+      stimulus: '<p style="font-weight:bold">WHICH KID DO YOU LIKE THE MOST?</p><p style="font-weight:bold">GO!</p>',
+      choices: [current_left_image, current_right_image],
+      button_layout: "flex",
+      button_html:
         function (choice, choice_index) {
 
-          current_trial_index = jsPsych.data.get().last(1).values()[0].trial_number-1;
+          current_trial_index = jsPsych.data.get().last(1).values()[0].trial_number - 1;
           console.log(current_trial_index);
 
           current_interest_condition_l = interest_condition_l_list[current_trial_index];
@@ -223,36 +331,47 @@
           }
 
           console.log(current_label);
-          
+
           return `<button class="jspsych-btn" onmouseover="this.style='background-color:#ADD8E6;margin-left:100px;margin-right:100px; padding: 20px;';" onmouseout="this.style='background-color:white;margin-left:100px;margin-right:100px; padding: 20px;';" style="margin-left:100px;margin-right:100px; padding: 20px;"><figcaption style="font-size:30px">${current_label}</figcaption><img src="${choice}" style="width:400px;height:400px"></button>`;
         },
-    prompt: "",
-    data: {
-      trial_kind: "trial_response",
-      trial_number: trial_number,
-      pair: current_trial_info.pair,
-      image_1: current_trial_info.image_1,
-      image_2: current_trial_info.image_2,
-      condition: current_trial_info.condition,
-      genders: current_trial_info.genders,
-      interest_condition_l: current_trial_info.interest_condition_l,
-      interest_condition_r: current_trial_info.interest_condition_r,
-      image_1_position: current_position_image_1,
-      current_left_image: current_left_image,
-      current_right_image: current_right_image,
-      current_left_interest: current_left_interest,
-      current_right_interest: current_right_interest
-    },
-    post_trial_gap: 500
+      prompt: "",
+      data: {
+        trial_kind: "trial_response",
+        trial_number: trial_number,
+        pair: current_trial_info.pair,
+        image_1: current_trial_info.image_1,
+        image_2: current_trial_info.image_2,
+        condition: current_trial_info.condition,
+        genders: current_trial_info.genders,
+        interest_condition_l: current_trial_info.interest_condition_l,
+        interest_condition_r: current_trial_info.interest_condition_r,
+        image_1_position: current_position_image_1,
+        current_left_image: current_left_image,
+        current_right_image: current_right_image,
+        current_left_interest: current_left_interest,
+        current_right_interest: current_right_interest
+      },
+      post_trial_gap: 500
+    };
+
+    //timeline.push(trial);
+  }
+
+  // save data trial
+  const save_data = {
+  type: jsPsychPipe,
+  action: "save",
+  experiment_id: "L6VfncydDdQx",
+  filename: filename,
+  data_string: ()=>jsPsych.data.get().csv()
 };
 
-//timeline.push(trial);
-  }
+timeline.push(save_data);
 
   //add final page
   var final_page = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: "<p style='font-size:20px; font-weight:bold'>GREAT JOB, YOU'RE ALL DONE!</p><img src='images/fireworks.png'>",
+    stimulus: "<p style='font-size:20px; font-weight:bold'>GREAT JOB, YOU'RE ALL DONE!</p><img src='images/fireworks.gif'>",
   };
   timeline.push(final_page)
 
