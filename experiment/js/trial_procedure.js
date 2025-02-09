@@ -14,8 +14,8 @@ function create_pre_trial(current_trial_info,current_position_image_1, current_l
 		current_right_image = 'images/' + current_trial_info["image_1"] + '.jpg';
 	  }
 
-	  console.log(current_trial_info)
-
+	  console.log(current_trial_info);
+	  var choice_interest_conditions = [current_trial_info.interest_condition_l,current_trial_info.interest_condition_r];
 
 	  // basic social preference trial
 	  var pre_trial = {
@@ -60,9 +60,11 @@ function create_pre_trial(current_trial_info,current_position_image_1, current_l
 		  genders: current_trial_info.genders,
 		  interest_condition_l: current_trial_info.interest_condition_l,
 		  interest_condition_r: current_trial_info.interest_condition_r,
+		  interest_conditions: choice_interest_conditions,
 		  image_1_position: current_position_image_1,
 		  current_left_image: current_left_image,
 		  current_right_image: current_right_image,
+		  choice_images: [current_left_image, current_right_image],
 		  current_left_interest: current_left_interest,
 		  current_right_interest: current_right_interest
 		},
@@ -80,6 +82,8 @@ function create_trial(current_trial_info,current_position_image_1, current_left_
 		current_left_image = 'images/' + current_trial_info["image_2"] + '.jpg';
 		current_right_image = 'images/' + current_trial_info["image_1"] + '.jpg';
 	  }
+
+	var choice_interest_conditions = [current_trial_info.interest_condition_l,current_trial_info.interest_condition_r];
 
 	var trial = {
 		type: jsPsychHtmlButtonResponse,
@@ -121,12 +125,20 @@ function create_trial(current_trial_info,current_position_image_1, current_left_
 		  genders: current_trial_info.genders,
 		  interest_condition_l: current_trial_info.interest_condition_l,
 		  interest_condition_r: current_trial_info.interest_condition_r,
+		  interest_conditions: choice_interest_conditions,
 		  image_1_position: current_position_image_1,
 		  current_left_image: current_left_image,
 		  current_right_image: current_right_image,
+		  choice_images: [current_left_image, current_right_image],
 		  current_left_interest: current_left_interest,
-		  current_right_interest: current_right_interest
+		  current_right_interest: current_right_interest,
 		},
+		on_finish: function(data){
+			console.log(data);
+			// store the chosen image
+			data.chosen_image = data.choice_images[data.response];
+			data.chosen_interest_condition = data.interest_conditions[data.response];
+		  },
 		post_trial_gap: 500
 	  };
 
