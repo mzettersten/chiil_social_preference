@@ -1,3 +1,19 @@
+  //prepractice trials
+  var prepractice_trials = [
+    {
+      images: ["images/apple.png", "images/banana.png"],
+      correct_location: "l",
+      correct_image: "images/apple.png",
+      prompt: '<p style="font-weight:bold">CLICK ON THE APPLE!</p>'
+    },
+    {
+      images: ["images/grapes.png", "images/cherries.png"],
+      correct_location: "r",
+      correct_image: "images/cherries.png",
+      prompt: '<p style="font-weight:bold">CLICK ON THE CHERRIES!</p>'
+    }
+  ];
+
 var practice_trials = [
   {
     "image_1": "249_m",

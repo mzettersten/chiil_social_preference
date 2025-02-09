@@ -116,6 +116,9 @@
   let practice_interest_l_list = shuffled_practice_trials.map(item => item.interest_l);
   let practice_interest_r_list = shuffled_practice_trials.map(item => item.interest_r);
 
+  console.log(practice_interest_l_list);
+  console.log(practice_interest_r_list);
+
   //preload images and audio
   var preload = {
     type: jsPsychPreload,
@@ -135,22 +138,6 @@
 
   // add the welcome trial to the timeline variable
   timeline.push(welcome);
-
-  //prepractice trials
-  prepractice_trials = [
-    {
-      images: ["images/apple.png", "images/banana.png"],
-      correct_location: "l",
-      correct_image: "images/apple.png",
-      prompt: '<p style="font-weight:bold">CLICK ON THE APPLE!</p>'
-    },
-    {
-      images: ["images/grapes.png", "images/cherries.png"],
-      correct_location: "r",
-      correct_image: "images/cherries.png",
-      prompt: '<p style="font-weight:bold">CLICK ON THE CHERRIES!</p>'
-    }
-  ];
 
   //prepractice trials
 
@@ -232,7 +219,7 @@
 
     practice_trial_number = practice_trial_number + 1;
     overall_trial_number = overall_trial_number + 1;
-    current_practice_trial_info = practice_trials[k];
+    current_practice_trial_info = shuffled_practice_trials[k];
 
     //shuffle position
     current_position_image_1 = jsPsych.randomization.shuffle(["l", "r"])[0];
@@ -285,7 +272,7 @@
     if (l == 3) {
       practice_trial_number = practice_trial_number + 1;
       overall_trial_number = overall_trial_number + 1;
-      current_practice_trial_info = practice_trials[practice_num];
+      current_practice_trial_info = shuffled_practice_trials[practice_num];
 
       //shuffle position
       current_position_image_1 = jsPsych.randomization.shuffle(["left", "right"])[0];
