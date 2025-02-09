@@ -38,7 +38,7 @@
   var hi_url = getParamFromURL('hi');
   var low_url = getParamFromURL('li');
 
-  
+
 
   //make sure that nobody can enter anything damaging
   participant_id.replace(/[^A-Za-z0-9_]/g, "");
@@ -47,10 +47,10 @@
 
   //define filename
   const date = new Date();
-	let dateString = date.getFullYear() + '-' + ('0'+(1+date.getMonth())).slice(-2) + '-' + ('0'+date.getDate()).slice(-2) + '_';
-		dateString += ('0'+date.getHours()).slice(-2) + 'h' + ('0'+date.getMinutes()).slice(-2) + '.' + ('0'+date.getSeconds()).slice(-2) + '.' + date.getMilliseconds();
-		console.log(dateString)
-  const filename = "chiil_sp_v1_"+participant_id+"_"+dateString+".csv";
+  let dateString = date.getFullYear() + '-' + ('0' + (1 + date.getMonth())).slice(-2) + '-' + ('0' + date.getDate()).slice(-2) + '_';
+  dateString += ('0' + date.getHours()).slice(-2) + 'h' + ('0' + date.getMinutes()).slice(-2) + '.' + ('0' + date.getSeconds()).slice(-2) + '.' + date.getMilliseconds();
+  console.log(dateString)
+  const filename = "chiil_sp_v1_" + participant_id + "_" + dateString + ".csv";
 
   if (hi_url == "") {
     var high_interest_category = "LEOPARDS";
@@ -73,8 +73,22 @@
   // create timeline
   var timeline = [];
 
+  //define interests per trial
+  for (let j = 0; j < social_pref_trials.length; j++) {
+    cur_trial = social_pref_trials[j];
+    if (cur_trial["interest_condition_l"] == "hi") {
+      cur_trial["interest_l"] = high_interest_category
+      cur_trial["interest_r"] = low_interest_category
+    } else {
+      cur_trial["interest_l"] = low_interest_category
+      cur_trial["interest_r"] = high_interest_category
+    }
+  }
+
   var shuffled_trials = jsPsych.randomization.shuffle(social_pref_trials);
   console.log(shuffled_trials);
+  var shuffled_practice_trials = jsPsych.randomization.shuffle(practice_trials);
+  console.log(shuffled_practice_trials);
 
   var image_1_position_list = ["r", "r", "r", "r", "l", "l", "l", "l"];
   var shuffled_image_1_position_list = jsPsych.randomization.shuffle(image_1_position_list);
@@ -86,14 +100,21 @@
   let practice_image1_list = practice_trials.map(item => "images/" + item.image_1 + ".jpg");
   let practice_image2_list = practice_trials.map(item => "images/" + item.image_2 + ".jpg");
   let practice_image_list = practice_image1_list.concat(practice_image2_list);
-  let other_image_list = ["images/apple.png","images/banana.png","images/cherries.png","images/grapes.png","images/fireworks.png","images/fireworks.gif","images/computer.png"];
-  let image_list = main_image_list.concat(practice_image_list,other_image_list);
+  let other_image_list = ["images/apple.png", "images/banana.png", "images/cherries.png", "images/grapes.png", "images/fireworks.png", "images/fireworks.gif", "images/computer.png"];
+  let image_list = main_image_list.concat(practice_image_list, other_image_list);
+  console.log(image_list)
 
-  //collect image interests by location list
+  //collect condition interests by condition list
   let interest_condition_l_list = shuffled_trials.map(item => item.interest_condition_l);
   let interest_condition_r_list = shuffled_trials.map(item => item.interest_condition_r);
 
-  console.log(image_list)
+  //collect interests list
+  let interest_l_list = shuffled_trials.map(item => item.interest_l);
+  let interest_r_list = shuffled_trials.map(item => item.interest_r);
+
+  //collect practice interests
+  let practice_interest_l_list = shuffled_practice_trials.map(item => item.interest_l);
+  let practice_interest_r_list = shuffled_practice_trials.map(item => item.interest_r);
 
   //preload images and audio
   var preload = {
@@ -113,48 +134,42 @@
   };
 
   // add the welcome trial to the timeline variable
-  //timeline.push(welcome);
-
-  // // create a short survey to collect a participant identifier
-  // var participant_id_entry = {
-  //   type: jsPsychSurveyText,
-  //   questions: [{ prompt: "Please enter your participant ID (e.g. p1):", name: "participant_id" }],
-  //   on_finish: function (data) {
-  //     console.log(data.response)
-  //     jsPsych.data.addProperties({
-  //       participant: data.response.participant_id
-  //     });
-  //   }
-  // };
-  // timeline.push(participant_id_entry)
+  timeline.push(welcome);
 
   //prepractice trials
   prepractice_trials = [
     {
       images: ["images/apple.png", "images/banana.png"],
-      correct_location: "left",
+      correct_location: "l",
       correct_image: "images/apple.png",
       prompt: '<p style="font-weight:bold">CLICK ON THE APPLE!</p>'
     },
     {
       images: ["images/grapes.png", "images/cherries.png"],
-      correct_location: "right",
+      correct_location: "r",
       correct_image: "images/cherries.png",
       prompt: '<p style="font-weight:bold">CLICK ON THE CHERRIES!</p>'
     }
   ];
 
+  //prepractice trials
+
   var prepractice_trials_shuffled = jsPsych.randomization.shuffle(prepractice_trials);
 
-  var trial_number = 0;
+  var prepractice_trial_number = 0;
+  var practice_trial_number = 0;
+  var exp_trial_number = 0;
+  var overall_trial_number = 0;
+  var button_label_index = 0;
 
-  for (let j = 0; j < prepractice_trials_shuffled.length; j++) {
+  for (let i = 0; i < prepractice_trials_shuffled.length; i++) {
 
-    // basic social preference trial
+    prepractice_trial_number = prepractice_trial_number + 1;
+    overall_trial_number = overall_trial_number + 1;
     var pre_trial = {
       type: jsPsychHtmlButtonKeyboardResponse,
-      stimulus: prepractice_trials_shuffled[j]["prompt"]+'<p style="font-weight:bold; opacity: 0">GO!</p>',
-      choices: prepractice_trials_shuffled[j]["images"],
+      stimulus: prepractice_trials_shuffled[i]["prompt"] + '<p style="font-weight:bold; opacity: 0">GO!</p>',
+      choices: prepractice_trials_shuffled[i]["images"],
       button_layout: "flex",
       response_keys: ["q"],
       button_html:
@@ -164,14 +179,16 @@
       prompt: "",
       data: {
         trial_kind: "prepractice_trial_instruction",
-        trial_number: trial_number,
-        image_1: prepractice_trials_shuffled[j]["images"][0],
-        image_2: prepractice_trials_shuffled[j]["images"][1],
-        image_1_position: "left",
-        current_left_image: prepractice_trials_shuffled[j]["images"][0],
-        current_right_image: prepractice_trials_shuffled[j]["images"][1],
-        correct_location: prepractice_trials_shuffled[j]["correct_location"],
-        correct_image: prepractice_trials_shuffled[j]["correct_image"]
+        overall_trial_number: overall_trial_number,
+        trial_type_number: prepractice_trial_number,
+        button_label_lag_index: button_label_index,
+        image_1: prepractice_trials_shuffled[i]["images"][0],
+        image_2: prepractice_trials_shuffled[i]["images"][1],
+        image_1_position: "l",
+        current_left_image: prepractice_trials_shuffled[i]["images"][0],
+        current_right_image: prepractice_trials_shuffled[i]["images"][1],
+        correct_location: prepractice_trials_shuffled[i]["correct_location"],
+        correct_image: prepractice_trials_shuffled[i]["correct_image"]
       },
     };
 
@@ -179,8 +196,8 @@
 
     var trial = {
       type: jsPsychHtmlButtonResponse,
-      stimulus: prepractice_trials_shuffled[j]["prompt"]+'<p style="font-weight:bold">GO!</p>',
-      choices: prepractice_trials_shuffled[j]["images"],
+      stimulus: prepractice_trials_shuffled[i]["prompt"] + '<p style="font-weight:bold">GO!</p>',
+      choices: prepractice_trials_shuffled[i]["images"],
       button_layout: "flex",
       response_keys: ["q"],
       button_html:
@@ -190,68 +207,115 @@
       prompt: "",
       data: {
         trial_kind: "prepractice_trial_response",
-        trial_number: trial_number,
-        image_1: prepractice_trials_shuffled[j]["images"][0],
-        image_2: prepractice_trials_shuffled[j]["images"][1],
-        image_1_position: "left",
-        current_left_image: prepractice_trials_shuffled[j]["images"][0],
-        current_right_image: prepractice_trials_shuffled[j]["images"][1],
-        correct_location: prepractice_trials_shuffled[j]["correct_location"],
-        correct_image: prepractice_trials_shuffled[j]["correct_image"]
+        overall_trial_number: overall_trial_number,
+        trial_type_number: prepractice_trial_number,
+        button_label_lag_index: button_label_index,
+        image_1: prepractice_trials_shuffled[i]["images"][0],
+        image_2: prepractice_trials_shuffled[i]["images"][1],
+        image_1_position: "l",
+        current_left_image: prepractice_trials_shuffled[i]["images"][0],
+        current_right_image: prepractice_trials_shuffled[i]["images"][1],
+        correct_location: prepractice_trials_shuffled[i]["correct_location"],
+        correct_image: prepractice_trials_shuffled[i]["correct_image"]
       },
       post_trial_gap: 500
     };
 
     timeline.push(trial);
-
   }
 
 
   //practice trials
-//   for (let i = 0; i < social_pref_trials.length; i++) {
-//     trial_number = trial_number + 1;
-//     current_trial_info = shuffled_trials[i];
-    
-//     //shuffle position
-//     current_position_image_1 = shuffled_image_1_position_list[i];
-    
-//     var pre_trial = create_pre_trial(current_trial_info,current_position_image_1,high_interest_category,low_interest_category);
-//     var trial = create_trial(current_trial_info,current_position_image_1,high_interest_category,low_interest_category);
-    
-//     timeline.push(pre_trial);
-//     timeline.push(trial);
-// }
+  //var practice_num = practice_trials.length;
+  var practice_num = 2;
+  for (let k = 0; k < practice_num; k++) {
 
-
-
-
-  //social preference trials
-  for (let i = 0; i < social_pref_trials.length; i++) {
-
-    trial_number = trial_number + 1;
-
-    current_trial_info = shuffled_trials[i];
+    practice_trial_number = practice_trial_number + 1;
+    overall_trial_number = overall_trial_number + 1;
+    current_practice_trial_info = practice_trials[k];
 
     //shuffle position
-    current_position_image_1 = shuffled_image_1_position_list[i];
+    current_position_image_1 = jsPsych.randomization.shuffle(["l", "r"])[0];
 
-    var pre_trial = create_pre_trial(current_trial_info,current_position_image_1,high_interest_category,low_interest_category);
-    var trial = create_trial(current_trial_info,current_position_image_1,high_interest_category,low_interest_category);
-    
+    //current left-right interests
+    var cur_left_label = current_practice_trial_info["interest_l"];
+    var cur_right_label = current_practice_trial_info["interest_r"];
+
+    var pre_trial = create_pre_trial(current_practice_trial_info, current_position_image_1, cur_left_label, cur_right_label, button_label_index, practice_trial_number, "practice");
+    if (k == practice_num - 1) {
+      button_label_index = 0;
+    } else {
+      button_label_index = button_label_index + 1;
+    }
+    var trial = create_trial(current_practice_trial_info, current_position_image_1, cur_left_label, cur_right_label, button_label_index, practice_trial_number, "practice");
+
     timeline.push(pre_trial);
     timeline.push(trial);
   }
 
+  //social preference trials
+  console.log(social_pref_trials.length)
+  for (let l = 0; l < social_pref_trials.length; l++) {
+
+    exp_trial_number = exp_trial_number + 1;
+    overall_trial_number = overall_trial_number + 1;
+
+    current_trial_info = shuffled_trials[l];
+
+    //shuffled position
+    current_position_image_1 = shuffled_image_1_position_list[l];
+
+    //current left-right interests
+    var cur_left_label = current_trial_info["interest_l"];
+    var cur_right_label = current_trial_info["interest_r"];
+
+    var pre_trial = create_pre_trial(current_trial_info, current_position_image_1, cur_left_label, cur_right_label, button_label_index, exp_trial_number, "trials");
+    if (l == 3) {
+      //reset button label index for practice trial
+      button_label_index = practice_num;
+    } else {
+      button_label_index = button_label_index + 1;
+    }
+    var trial = create_trial(current_trial_info, current_position_image_1, cur_left_label, cur_right_label, button_label_index, exp_trial_number, "trials");
+
+    timeline.push(pre_trial);
+    timeline.push(trial);
+
+    // add practice trial
+    if (l == 3) {
+      practice_trial_number = practice_trial_number + 1;
+      overall_trial_number = overall_trial_number + 1;
+      current_practice_trial_info = practice_trials[practice_num];
+
+      //shuffle position
+      current_position_image_1 = jsPsych.randomization.shuffle(["left", "right"])[0];
+
+      //current left-right interests
+      var cur_left_label = current_practice_trial_info["interest_l"];
+      var cur_right_label = current_practice_trial_info["interest_r"];
+
+      var pre_trial = create_pre_trial(current_practice_trial_info, current_position_image_1, cur_left_label, cur_right_label, button_label_index, practice_trial_number, "practice");
+      //start button at next trial
+      button_label_index = l + 1;
+      var trial = create_trial(current_practice_trial_info, current_position_image_1, cur_left_label, cur_right_label, button_label_index, practice_trial_number, "practice");
+
+      timeline.push(pre_trial);
+      timeline.push(trial);
+
+    }
+
+  }
+
   // save data trial
   const save_data = {
-  type: jsPsychPipe,
-  action: "save",
-  experiment_id: "L6VfncydDdQx",
-  filename: filename,
-  data_string: ()=>jsPsych.data.get().csv()
-};
+    type: jsPsychPipe,
+    action: "save",
+    experiment_id: "L6VfncydDdQx",
+    filename: filename,
+    data_string: () => jsPsych.data.get().csv()
+  };
 
-timeline.push(save_data);
+  timeline.push(save_data);
 
   //add final page
   var final_page = {

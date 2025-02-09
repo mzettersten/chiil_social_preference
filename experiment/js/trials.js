@@ -13,7 +13,8 @@ var practice_trials = [
     "genders": "m-f",
     "condition": "gender",
     "interest_l": "Squares",
-    "interest_r": "Circles"
+    "interest_r": "Circles",
+
   },
   {
     "image_1": "226_f",
