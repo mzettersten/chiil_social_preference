@@ -45,6 +45,11 @@
   hi_url.replace(/[^A-Za-z0-9_]/g, "");
   low_url.replace(/[^A-Za-z0-9_]/g, "");
 
+  //replace underscore with spaces
+  hi_url = hi_url.replace(/_/g, " ");
+  low_url = low_url.replace(/_/g, " ");
+
+
   //define filename
   const date = new Date();
   let dateString = date.getFullYear() + '-' + ('0' + (1 + date.getMonth())).slice(-2) + '-' + ('0' + date.getDate()).slice(-2) + '_';
